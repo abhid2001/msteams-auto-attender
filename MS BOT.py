@@ -5,6 +5,10 @@ from selenium import webdriver
 import os
 import platform
 from time import sleep
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC 
 
 
 def clearscreen():
@@ -29,11 +33,11 @@ class bot:
 
         loginuser = self.driver.find_element_by_id("i0116")
         loginuser.send_keys(
-            "abhinavdugar.191it202@nitk.edu.in" + Keys.RETURN)
+            "shipramathur.191it147@nitk.edu.in" + Keys.RETURN)
         sleep(2)
 
         loginpass = self.driver.find_element_by_id("i0118")
-        loginpass.send_keys("" + Keys.RETURN)
+        loginpass.send_keys("surya@333" + Keys.RETURN)
         sleep(2)
         self.driver.find_element_by_id("idSIButton9").click()
         sleep(2)
@@ -43,7 +47,7 @@ class bot:
     def checkchannel(self):
         sleep(15)
         self.driver.get(
-            'https://teams.microsoft.com/_#/school/conversations/General?threadId=19:1cfd98849e1a489d929af75ec32dfe38@thread.tacv2&ctx=channel')
+            'https://teams.microsoft.com/_#/school/conversations/General?threadId=19:2b925891dfca4837b4fb9a45498b2b4a@thread.tacv2&ctx=channel')
         sleep(5)
         count_of_channels = len(
             self.driver.find_elements_by_css_selector("div.name-channel-type"))
@@ -122,16 +126,25 @@ class bot:
                 print('Team Still Loading...')
                 sleep(2)
         students = self.checkparticipants()
-        if(students > 9):  # Number of students required before you join
-            self.driver.find_element_by_xpath(
-                '//*[@id="page-content-wrapper"]/div[1]/div/calling-pre-join-screen/div/div/div[2]/div[1]/div[2]/div/div/section/div[1]/div/div/button').click()
-            print("Joined meeting,number of participants: "+str(students))
-        else:
-            sleep(60)
-            self.driver.find_element_by_xpath(
-                '//*[@id="page-content-wrapper"]/div[1]/div/calling-pre-join-screen/div/div/div[2]/div[1]/div[2]/div/div/section/div[1]/div/div/button').click()
-            print("Joined meeting,number of participants: "+str(students))
+        print("Joined meeting,number of participants: "+str(students))
         sleep(5)
+
+    def endcall(self):
+        while True:
+            try:
+                                
+                print("Leaving the meet now!")
+                end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
+                print(end)
+                end.click()
+                print("Meet ended")
+            except:
+                actions = ActionChains(self.driver)
+                actions.send_keys(Keys.TAB)
+                actions.perform()
+            else:
+                break
+            
 
 
 def main(teamname):
@@ -142,6 +155,7 @@ def main(teamname):
     b.checkchannel()
     b.waitformeeting()
     b.joinmeeting()
+    b.endcall()
 
 
-main("DSA")
+main("test")
