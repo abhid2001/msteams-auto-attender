@@ -122,15 +122,7 @@ class bot:
                 print('Team Still Loading...')
                 sleep(2)
         students = self.checkparticipants()
-        if(students > 9):  # Number of students required before you join
-            self.driver.find_element_by_xpath(
-                '//*[@id="page-content-wrapper"]/div[1]/div/calling-pre-join-screen/div/div/div[2]/div[1]/div[2]/div/div/section/div[1]/div/div/button').click()
-            print("Joined meeting,number of participants: "+str(students))
-        else:
-            sleep(60)
-            self.driver.find_element_by_xpath(
-                '//*[@id="page-content-wrapper"]/div[1]/div/calling-pre-join-screen/div/div/div[2]/div[1]/div[2]/div/div/section/div[1]/div/div/button').click()
-            print("Joined meeting,number of participants: "+str(students))
+        print("Joined meeting,number of participants: "+str(students))
         sleep(5)
 
 
