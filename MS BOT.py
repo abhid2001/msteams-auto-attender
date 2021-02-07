@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -5,6 +6,12 @@ from selenium import webdriver
 import os
 import platform
 from time import sleep
+import datetime
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -160,14 +167,72 @@ class bot:
                 actions.perform()
             else:
                 break
+    
+    def loadteam(self, team):
+        while True:
+            try:
+                filterbtn = self.driver.find_element_by_xpath(
+                    "//profile-picture[@title='"+team+"']")
+                print("DONE LOADING, SELECTING TEAM NOW...")
+                filterbtn.click()
+                sleep(3)
+                break
+            except:
+                print("TEAM STILL LOADING...")
+                sleep(5)
+
+def TEAM():
+    """Shows basic usage of the Google Calendar API.
+    Prints the start and name of the next 10 events on the user's calendar.
+    """
+
+    # If modifying these scopes, delete the file token.pickle.
+    SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+    creds = None
+    # The file token.pickle stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'C:\\Users\\kumar\\Downloads\\credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    service = build('calendar', 'v3', credentials=creds)
+
+    # Call the Calendar API
+    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+    print('Getting the upcoming event')
+    calendarId = '5e42ll1vlsv91bcvptqpccf5pc@group.calendar.google.com'
+    events_result = service.events().list(calendarId=calendarId, timeMin=now,
+                                          maxResults=1, singleEvents=True,
+                                          orderBy='startTime').execute()
+    events = events_result.get('items', [])
+
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        return (event['summary'])
+
         
-
-
 def main(teamname):
     clearscreen()
     print("Running the script for team '"+teamname+"'")
     b = bot()
     b.login()
+    #we need to pass this team to loadteam function but since its not in my calendar so i am hard coding it.
+    team = TEAM()
+    b.loadteam("Group test")
     b.checkchannel()
     b.waitformeeting()
     b.joinmeeting()
