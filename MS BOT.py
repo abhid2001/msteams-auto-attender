@@ -52,6 +52,7 @@ class bot:
         #     '/html/body/div/form/div[1]/div/div[1]/div[2]/div/div[2]/div/div[3]/div[2]/div/div/div[2]').click()
 
     def checkchannel(self):
+        self.driver.maximize_window()
         sleep(15)
         self.driver.get(
             'https://teams.microsoft.com/_#/school/conversations/General?threadId=19:2b925891dfca4837b4fb9a45498b2b4a@thread.tacv2&ctx=channel')
@@ -224,6 +225,79 @@ def TEAM():
         start = event['start'].get('dateTime', event['start'].get('date'))
         return (event['summary'])
 
+
+    def chat(self):
+        while True:
+                try:
+                                
+                    print("Leaving the meet now!")
+                    chat = self.driver.find_element_by_xpath('//*[@id="chat-button"]')                
+                    print(chat)
+                    chat.click()
+                    print("Chat-box open")
+                except:
+                    actions = ActionChains(self.driver)
+                    actions.send_keys(Keys.TAB)
+                    actions.perform()
+                else:
+                    break
+    def checkmessages(self):
+        #chatpannel
+        self.driver.find_element_by_xpath('//*[@id="page-content-wrapper"]/div[1]/div/calling-screen/div/div[2]/meeting-panel-components')
+        senders = []
+        messages = []
+        times = []
+        msgsender = self.driver.find_elements_by_xpath('//*[@data-tid="threadBodyDisplayName"]') #returns list of elements of names that sent messages
+        for i in msgsender:
+            senders.append(i.get_attribute('innerHTML').strip())
+            
+            
+        msgcontent = self.driver.find_elements_by_xpath('//*[@data-tid="messageBodyContent"]')#returns list of elements of messages content
+        for i in msgcontent:
+            res= re.findall(r'<div>(.*?)</div>',str(i.get_attribute('innerHTML').strip()))
+            messages.append(res)
+            
+        msgtime = self.driver.find_elements_by_xpath('//*[@data-tid="messageTimeStamp"]')
+        for i in msgtime:
+            times.append(i.get_attribute('innerHTML').strip())
+        n = len(messages)
+        print(messages[1:n-1])   
+
+        return messages
+   
+            
+    def sendmessage(self):
+            x = self.commonmsg()
+ #           try:
+            inputmsg = self.driver.find_element_by_xpath('//*[@data-tid="ckeditor-replyConversation"]')
+#            inputmsg.click()
+            inputmsg.send_keys(x)
+            inputmsg.send_keys(Keys.ENTER)
+            #sendmsg
+            self.driver.find_element_by_xpath('//*[@id="send-message-button"]').click()
+#            except:
+#                print("!  ERROR : problem sending present message   ! ")
+                
+    def commonmsg(self):
+        message = self.checkmessages()
+        
+        n = len(message)
+        
+        max = 0
+        
+        for i in range(n):
+            temp = message[i]
+            count = 0
+            for j in range(n):
+                if(message[j] == temp):
+                    count+=1
+            if(count>max):
+                max = count
+                ans = temp
+        print(ans)
+                
+        return ans
+
         
 def main(teamname):
     clearscreen()
@@ -236,6 +310,11 @@ def main(teamname):
     b.checkchannel()
     b.waitformeeting()
     b.joinmeeting()
+    b.chat()
+    b.commonmsg()
+    b.sendmessage()
+    sleep(2)
+    sleep(2)
     b.endcall()
 
 
