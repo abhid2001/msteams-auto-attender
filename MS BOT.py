@@ -1,4 +1,5 @@
 from __future__ import print_function
+import smtplib
 import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -67,7 +68,7 @@ class bot:
                 joinbtn = self.driver.find_element_by_xpath(
                     '//*[@title="Join call with video"]')
                 joinbtn.click()
-                print("Meeting is available, joining now...")
+                send("Meeting is available, joining now...")
                 sleep(5)
                 break
             except:
@@ -134,7 +135,7 @@ class bot:
                 print('Team Still Loading...')
                 sleep(2)
         students = self.checkparticipants()
-        print("Joined meeting,number of participants: "+str(students))
+        send("Joined meeting,number of participants: "+str(students))
         sleep(5)
 
     def endcall(self):
@@ -145,7 +146,7 @@ class bot:
                 end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
                 print(end)
                 end.click()
-                print("Meet ended")
+                send("Meet ended")
             except:
                 actions = ActionChains(self.driver)
                 actions.send_keys(Keys.TAB)
@@ -161,7 +162,7 @@ class bot:
                 end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
                 print(end)
                 end.click()
-                print("Meet ended")
+                send("Meet ended")
             except:
                 actions = ActionChains(self.driver)
                 actions.send_keys(Keys.TAB)
@@ -174,7 +175,7 @@ class bot:
             try:
                 filterbtn = self.driver.find_element_by_xpath(
                     "//profile-picture[@title='"+team+"']")
-                print("DONE LOADING, SELECTING TEAM NOW...")
+                send("DONE LOADING, SELECTING" +team+" NOW...")
                 filterbtn.click()
                 sleep(3)
                 break
@@ -261,7 +262,7 @@ def TEAM():
         for i in msgtime:
             times.append(i.get_attribute('innerHTML').strip())
         n = len(messages)
-        print(messages[1:n-1])   
+        send(messages[1:n-1])   
 
         return messages
    
@@ -294,14 +295,27 @@ def TEAM():
             if(count>max):
                 max = count
                 ans = temp
-        print(ans)
+        send(ans)
                 
         return ans
+
+    
+def send(message): 
+    sender_email = "anandkumarsingh.191ec104@nitk.edu.in"
+    rec_email = "kumaranand07091993@gmail.com"
+    password = input("enter your password")
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(sender_email, password)
+    print("login success")
+    server.sendmail(sender_email, rec_email, message)
+    print("message sent to", rec_email)
 
         
 def main(teamname):
     clearscreen()
-    print("Running the script for team '"+teamname+"'")
+    send("Running the script for team '"+teamname+"'")
     b = bot()
     b.login()
     #we need to pass this team to loadteam function but since its not in my calendar so i am hard coding it.
