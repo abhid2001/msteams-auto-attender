@@ -6,7 +6,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import os
+import smtplib
 import platform
+import regex as re
 from time import sleep
 import pickle
 import os.path
@@ -17,6 +19,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import smtplib
+import ssl
+import random
+import imaplib
+import email
+from email.header import decode_header
+import webbrowser
 
 
 def clearscreen():
@@ -167,6 +176,7 @@ class bot:
                 # joinbtn2
                 self.driver.find_element_by_xpath(
                     '//*[@id="page-content-wrapper"]/div[1]/div/calling-pre-join-screen/div/div/div[2]/div[1]/div[2]/div/div/section/div[1]/div/div/button').click()
+                send("Joined the Meeting!!!")
                 break
             except:
                 print('Team Still Loading...')
@@ -186,6 +196,7 @@ class bot:
                 print(end)
                 end.click()
                 print("Meet ended")
+                send("Leaving the meet!!!")
             except:
                 actions = ActionChains(self.driver)
                 actions.send_keys(Keys.TAB)
@@ -324,6 +335,19 @@ def TEAM():
         return (event['summary'])
 
 
+def send(message):
+    sender_email = "anandkumarsingh.191ec104@nitk.edu.in"
+    rec_email = "kumaranand07091993@gmail.com"
+    password = input("enter your password")
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(sender_email, password)
+    print("login success")
+    server.sendmail(sender_email, rec_email, message)
+    print("message sent to", rec_email)
+
+
 def main():
     clearscreen()
     print("Running the script!!!")
@@ -332,7 +356,7 @@ def main():
     curr_time = datetime.datetime.now()
     while(curr_time.hour >= 9 and curr_time.hour <= 17):
         team = TEAM()
-        b.loadteam('Group test')
+        b.loadteam(team)
         b.checkchannel()
         b.joinmeeting()
         b.chat()
