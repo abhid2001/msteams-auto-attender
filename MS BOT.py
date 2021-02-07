@@ -1,13 +1,13 @@
 from __future__ import print_function
-import smtplib
 import time
+import datetime
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import os
 import platform
 from time import sleep
-import datetime
 import pickle
 import os.path
 from googleapiclient.discovery import build
@@ -16,7 +16,7 @@ from google.auth.transport.requests import Request
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC 
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def clearscreen():
@@ -33,7 +33,9 @@ class bot:
         # options.binary_location = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
         # chrome_driver_binary = "C:\\Program Files (x86)\\chromedriver.exe"
         # self.driver = webdriver.Chrome(chrome_driver_binary, options=options)
-        self.driver = webdriver.Chrome()
+        chrome_options = Options()
+        chrome_options.add_argument("use-fake-ui-for-media-stream")
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
 
     def login(self):
         self.driver.get('https://teams.microsoft.com/')
@@ -41,41 +43,71 @@ class bot:
 
         loginuser = self.driver.find_element_by_id("i0116")
         loginuser.send_keys(
-            "shipramathur.191it147@nitk.edu.in" + Keys.RETURN)
+            "" + Keys.RETURN)  # Enter user email
         sleep(2)
 
         loginpass = self.driver.find_element_by_id("i0118")
-        loginpass.send_keys("" + Keys.RETURN)
+        loginpass.send_keys("" + Keys.RETURN)  # Enter user password
         sleep(2)
         self.driver.find_element_by_id("idSIButton9").click()
         sleep(2)
         # self.driver.find_element_by_xpath(
         #     '/html/body/div/form/div[1]/div/div[1]/div[2]/div/div[2]/div/div[3]/div[2]/div/div/div[2]').click()
 
-    def checkchannel(self):
-        self.driver.maximize_window()
-        sleep(15)
-        self.driver.get(
-            'https://teams.microsoft.com/_#/school/conversations/General?threadId=19:2b925891dfca4837b4fb9a45498b2b4a@thread.tacv2&ctx=channel')
-        sleep(5)
-        count_of_channels = len(
-            self.driver.find_elements_by_css_selector("div.name-channel-type"))
-        self.driver.find_element_by_css_selector('a.channel-anchor').click()
-
-    def waitformeeting(self):
+    def loadteam(self, team):
         while True:
             try:
-                joinbtn = self.driver.find_element_by_xpath(
-                    '//*[@title="Join call with video"]')
-                joinbtn.click()
-                send("Meeting is available, joining now...")
-                sleep(5)
+                filterbtn = self.driver.find_element_by_xpath(
+                    "//profile-picture[@title='"+team+"']")
+                print("DONE LOADING, SELECTING TEAM NOW...")
+                filterbtn.click()
+                sleep(3)
                 break
             except:
-                sleep(60)
-                print("Waiting for meeting to start...")
+                print("TEAM STILL LOADING...")
+                sleep(5)
+
+    def checkchannel(self):
+        sleep(35)
+
+        count_of_channels = len(
+            self.driver.find_elements_by_css_selector("div.name-channel-type"))
+        channels = list(
+            self.driver.find_elements_by_css_selector('a.channel-anchor'))
+        flag = 0
+        while True:
+            if flag == 1:
+                break
+            for i in channels:
+                i.click()
+                try:
+                    sleep(6)
+                    joinbtn = self.driver.find_element_by_xpath(
+                        '//*[@title="Join call with video"]')
+                    joinbtn.click()
+                    print("Meeting is available, joining now...")
+                    sleep(5)
+                    flag = 1
+                    break
+                except:
+                    print("Checking another channel ")
+                    sleep(5)
+    # def waitformeeting(self):
+    #     while True:
+    #         try:
+    #             joinbtn = self.driver.find_element_by_xpath(
+    #                 '//*[@title="Join call with video"]')
+    #             joinbtn.click()
+    #             print("Meeting is available, joining now...")
+    #             sleep(5)
+    #             break
+    #         except:
+    #             sleep(10)
+    #             print("Waiting for meeting to start...")
 
     def showparticipants(self):
+        sleep(30)
+
         while True:
             try:
                 participantsbtn = self.driver.find_element_by_xpath(
@@ -112,8 +144,13 @@ class bot:
             return nbr
 
     def joinmeeting(self):
+        count = 0
         while True:
+
             try:
+                count += 1
+                if(count >= 15):
+                    break
                 mic = self.driver.find_element_by_xpath(
                     '//*[@id="preJoinAudioButton"]/div/button/span[1]')
                 if 'Mute microphone' in mic.get_attribute('outerHTML'):
@@ -134,19 +171,21 @@ class bot:
             except:
                 print('Team Still Loading...')
                 sleep(2)
+
         students = self.checkparticipants()
-        send("Joined meeting,number of participants: "+str(students))
+        print("Joined meeting,number of participants: "+str(students))
         sleep(5)
 
     def endcall(self):
         while True:
             try:
-                                
+
                 print("Leaving the meet now!")
-                end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
+                end = self.driver.find_element_by_xpath(
+                    '//*[@id="hangup-button"]')
                 print(end)
                 end.click()
-                send("Meet ended")
+                print("Meet ended")
             except:
                 actions = ActionChains(self.driver)
                 actions.send_keys(Keys.TAB)
@@ -154,34 +193,91 @@ class bot:
             else:
                 break
 
-    def chatbox(self):
+    def home(self):
+        self.driver.get(
+            'https://teams.microsoft.com/_#/school//?ctx=teamsGrid')
+
+    def chat(self):
         while True:
             try:
-                                
-                print("Opening chat box now!")
-                end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
-                print(end)
-                end.click()
-                send("Meet ended")
+
+                print("Leaving the meet now!")
+                chat = self.driver.find_element_by_xpath(
+                    '//*[@id="chat-button"]')
+                print(chat)
+                chat.click()
+                print("Chat-box open")
             except:
                 actions = ActionChains(self.driver)
                 actions.send_keys(Keys.TAB)
                 actions.perform()
             else:
                 break
-    
-    def loadteam(self, team):
-        while True:
-            try:
-                filterbtn = self.driver.find_element_by_xpath(
-                    "//profile-picture[@title='"+team+"']")
-                send("DONE LOADING, SELECTING" +team+" NOW...")
-                filterbtn.click()
-                sleep(3)
-                break
-            except:
-                print("TEAM STILL LOADING...")
-                sleep(5)
+
+    def checkmessages(self):
+        # chatpannel
+        self.driver.find_element_by_xpath(
+            '//*[@id="page-content-wrapper"]/div[1]/div/calling-screen/div/div[2]/meeting-panel-components')
+        senders = []
+        messages = []
+        times = []
+        # returns list of elements of names that sent messages
+        msgsender = self.driver.find_elements_by_xpath(
+            '//*[@data-tid="threadBodyDisplayName"]')
+        for i in msgsender:
+            senders.append(i.get_attribute('innerHTML').strip())
+
+        # returns list of elements of messages content
+        msgcontent = self.driver.find_elements_by_xpath(
+            '//*[@data-tid="messageBodyContent"]')
+        for i in msgcontent:
+            res = re.findall(r'<div>(.*?)</div>',
+                             str(i.get_attribute('innerHTML').strip()))
+            messages.append(res)
+
+        msgtime = self.driver.find_elements_by_xpath(
+            '//*[@data-tid="messageTimeStamp"]')
+        for i in msgtime:
+            times.append(i.get_attribute('innerHTML').strip())
+        n = len(messages)
+        print(messages[1:n-1])
+
+        return messages
+
+    def sendmessage(self):
+        x = self.commonmsg()
+ #           try:
+        inputmsg = self.driver.find_element_by_xpath(
+            '//*[@data-tid="ckeditor-replyConversation"]')
+#            inputmsg.click()
+        inputmsg.send_keys(x)
+        inputmsg.send_keys(Keys.ENTER)
+        # sendmsg
+        self.driver.find_element_by_xpath(
+            '//*[@id="send-message-button"]').click()
+#            except:
+#                print("!  ERROR : problem sending present message   ! ")
+
+    def commonmsg(self):
+        message = self.checkmessages()
+
+        n = len(message)
+
+        max = 0
+
+        for i in range(n):
+            temp = message[i]
+            count = 0
+            for j in range(n):
+                if(message[j] == temp):
+                    count += 1
+            if(count > max):
+                max = count
+                ans = temp
+        print(ans)
+
+        return ans
+
 
 def TEAM():
     """Shows basic usage of the Google Calendar API.
@@ -203,7 +299,7 @@ def TEAM():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'C:\\Users\\kumar\\Downloads\\credentials.json', SCOPES)
+                'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
@@ -224,112 +320,28 @@ def TEAM():
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
+        print(event['summary'])
         return (event['summary'])
 
 
-    def chat(self):
-        while True:
-                try:
-                                
-                    print("Leaving the meet now!")
-                    chat = self.driver.find_element_by_xpath('//*[@id="chat-button"]')                
-                    print(chat)
-                    chat.click()
-                    print("Chat-box open")
-                except:
-                    actions = ActionChains(self.driver)
-                    actions.send_keys(Keys.TAB)
-                    actions.perform()
-                else:
-                    break
-    def checkmessages(self):
-        #chatpannel
-        self.driver.find_element_by_xpath('//*[@id="page-content-wrapper"]/div[1]/div/calling-screen/div/div[2]/meeting-panel-components')
-        senders = []
-        messages = []
-        times = []
-        msgsender = self.driver.find_elements_by_xpath('//*[@data-tid="threadBodyDisplayName"]') #returns list of elements of names that sent messages
-        for i in msgsender:
-            senders.append(i.get_attribute('innerHTML').strip())
-            
-            
-        msgcontent = self.driver.find_elements_by_xpath('//*[@data-tid="messageBodyContent"]')#returns list of elements of messages content
-        for i in msgcontent:
-            res= re.findall(r'<div>(.*?)</div>',str(i.get_attribute('innerHTML').strip()))
-            messages.append(res)
-            
-        msgtime = self.driver.find_elements_by_xpath('//*[@data-tid="messageTimeStamp"]')
-        for i in msgtime:
-            times.append(i.get_attribute('innerHTML').strip())
-        n = len(messages)
-        send(messages[1:n-1])   
-
-        return messages
-   
-            
-    def sendmessage(self):
-            x = self.commonmsg()
- #           try:
-            inputmsg = self.driver.find_element_by_xpath('//*[@data-tid="ckeditor-replyConversation"]')
-#            inputmsg.click()
-            inputmsg.send_keys(x)
-            inputmsg.send_keys(Keys.ENTER)
-            #sendmsg
-            self.driver.find_element_by_xpath('//*[@id="send-message-button"]').click()
-#            except:
-#                print("!  ERROR : problem sending present message   ! ")
-                
-    def commonmsg(self):
-        message = self.checkmessages()
-        
-        n = len(message)
-        
-        max = 0
-        
-        for i in range(n):
-            temp = message[i]
-            count = 0
-            for j in range(n):
-                if(message[j] == temp):
-                    count+=1
-            if(count>max):
-                max = count
-                ans = temp
-        send(ans)
-                
-        return ans
-
-    
-def send(message): 
-    sender_email = "anandkumarsingh.191ec104@nitk.edu.in"
-    rec_email = "kumaranand07091993@gmail.com"
-    password = input("enter your password")
-
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(sender_email, password)
-    print("login success")
-    server.sendmail(sender_email, rec_email, message)
-    print("message sent to", rec_email)
-
-        
-def main(teamname):
+def main():
     clearscreen()
-    send("Running the script for team '"+teamname+"'")
+    print("Running the script!!!")
     b = bot()
     b.login()
-    #we need to pass this team to loadteam function but since its not in my calendar so i am hard coding it.
-    team = TEAM()
-    b.loadteam("Group test")
-    b.checkchannel()
-    b.waitformeeting()
-    b.joinmeeting()
-    b.chat()
-    b.commonmsg()
-    b.sendmessage()
-    sleep(2)
-    sleep(2)
-    b.endcall()
+    curr_time = datetime.datetime.now()
+    while(curr_time.hour >= 9 and curr_time.hour <= 17):
+        team = TEAM()
+        b.loadteam('Group test')
+        b.checkchannel()
+        b.joinmeeting()
+        b.chat()
+        b.commonmsg()
+        b.sendmessage()
+        sleep(2)
+        sleep(2)
+        b.endcall()
+        b.home()
 
 
-main("test")
+main()
