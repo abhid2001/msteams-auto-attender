@@ -37,7 +37,7 @@ class bot:
         sleep(2)
 
         loginpass = self.driver.find_element_by_id("i0118")
-        loginpass.send_keys("surya@333" + Keys.RETURN)
+        loginpass.send_keys("" + Keys.RETURN)
         sleep(2)
         self.driver.find_element_by_id("idSIButton9").click()
         sleep(2)
@@ -144,7 +144,23 @@ class bot:
                 actions.perform()
             else:
                 break
-            
+
+    def chatbox(self):
+        while True:
+            try:
+                                
+                print("Opening chat box now!")
+                end = self.driver.find_element_by_xpath('//*[@id="hangup-button"]')                
+                print(end)
+                end.click()
+                print("Meet ended")
+            except:
+                actions = ActionChains(self.driver)
+                actions.send_keys(Keys.TAB)
+                actions.perform()
+            else:
+                break
+        
 
 
 def main(teamname):
